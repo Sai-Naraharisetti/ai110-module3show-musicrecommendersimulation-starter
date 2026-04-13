@@ -2,32 +2,139 @@
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
-
-Your goal is to:
-
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
-
-Replace this paragraph with your own summary of what your version does.
+This project is my simplified version of a music recommendation engine. I built a small system that compares each song to a user's taste profile, gives the song a score, and then recommends the highest scoring songs. The goal is not to copy Spotify exactly, but to understand the core logic behind how recommendation systems turn preferences into ranked results.
 
 ---
 
 ## How The System Works
 
-Explain your design in plain language.
+I designed this as a score-and-rank pipeline. The model loops through every song in the CSV, computes a match score against one user profile, then sorts songs from highest score to lowest score.
 
-Some prompts to answer:
+### Final Algorithm Recipe
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+For each song, start at `score = 0` and apply these rules:
 
-You can include a simple diagram or bullet list if helpful.
+- `+2.0` if genre matches `favorite_genre`
+- `+1.0` if mood matches `favorite_mood`
+- Energy similarity: `+2.0 * (1 - abs(song.energy - target_energy))`
+- Valence similarity (tie-breaker): `+0.75 * (1 - abs(song.valence - target_valence))`
+- Danceability similarity (tie-breaker): `+0.5 * (1 - abs(song.danceability - target_danceability))`
+- Acousticness similarity (tie-breaker): `+0.5 * (1 - abs(song.acousticness - target_acousticness))`
+- Tempo similarity (light tie-breaker):
+  - `tempo_similarity = 1 - min(abs(song.tempo_bpm - target_tempo_bpm) / 100, 1)`
+  - `+0.25 * tempo_similarity`
+
+Then rank all songs by final score and return top `k`.
+
+Why this balance:
+
+- Genre gets more weight than mood because it defines broader taste boundaries.
+- Mood still matters, but it is less strict across styles.
+- Energy gets strong weight because it captures the main vibe intensity.
+- The remaining audio features help break ties between songs that already look similar.
+
+### Data Flow Map
+
+Input (User Prefs) -> Process (Loop over songs, score each one) -> Output (Sorted top K recommendations)
+
+```mermaid
+flowchart LR
+    A[User Preferences] --> B[Load songs.csv]
+    B --> C[For each song]
+    C --> D[Apply scoring rules]
+    D --> E[Store song and score]
+    E --> F[Sort by score descending]
+    F --> G[Return top K recommendations]
+```
+
+### Potential Biases
+
+This system may over-prioritize genre and miss cross-genre songs that match the user's mood and vibe. It can also favor songs that are very close to one numeric target (like energy) even when a user would realistically enjoy more variety.
+
+### terminal_ss
+
+The environment used for this run does not allow GUI screen capture, so this is a direct terminal snapshot of `python -m src.main` output:
+
+```text
+Loaded songs: 18
+
+Top recommendations for profile:
+genre=pop, mood=happy, target_energy=0.80
+
+1. Sunrise City by Neon Echo
+  Score   : 6.90
+  Reasons : genre match (+2.0); mood match (+1.0); energy closeness (+1.96); valence closeness (+0.73); danceability closeness (+0.48); acousticness closeness (+0.49); tempo closeness (+0.24)
+
+2. Gym Hero by Max Pulse
+  Score   : 5.58
+  Reasons : genre match (+2.0); energy closeness (+1.74); valence closeness (+0.71); danceability closeness (+0.48); acousticness closeness (+0.42); tempo closeness (+0.23)
+
+3. Rooftop Lights by Indigo Parade
+  Score   : 4.82
+  Reasons : mood match (+1.0); energy closeness (+1.92); valence closeness (+0.74); danceability closeness (+0.49); acousticness closeness (+0.43); tempo closeness (+0.24)
+
+4. Salsa En La Noche by Brisa Roja
+  Score   : 3.92
+  Reasons : energy closeness (+1.98); valence closeness (+0.74); danceability closeness (+0.49); acousticness closeness (+0.49); tempo closeness (+0.21)
+
+5. Golden Pulse by Kora Avenue
+  Score   : 3.85
+  Reasons : energy closeness (+1.98); valence closeness (+0.68); danceability closeness (+0.47); acousticness closeness (+0.49); tempo closeness (+0.23)
+```
+
+
+### Features Used In This Simulation
+
+Song object features:
+- id
+- title
+- artist
+- genre
+- mood
+- energy
+- tempo_bpm
+- valence
+- danceability
+- acousticness
+
+UserProfile object features:
+- favorite_genre
+- favorite_mood
+- target_energy
+- likes_acoustic
+
+### Prompt To Expand The Dataset
+
+I used this prompt to generate more songs in the same CSV format:
+
+```text
+Generate 8 new songs for my recommender dataset in valid CSV format.
+
+Use exactly these headers and this order:
+id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness
+
+Rules:
+- Continue id numbering from 11.
+- Return only CSV (header + rows), no explanation.
+- Keep energy, valence, danceability, acousticness between 0.00 and 1.00.
+- Keep tempo_bpm between 50 and 190.
+- Make titles and artists unique.
+- Use genres and moods that are not already in my starter data.
+- Keep each row realistic (for example, very acoustic tracks should usually not have extremely high danceability).
+```
+
+### Extra Numerical Features To Add Later
+
+To make the simulation richer, these features would help:
+
+- instrumentalness (0.0-1.0): how likely the track has no vocals
+- liveness (0.0-1.0): how much it sounds like a live recording
+- speechiness (0.0-1.0): spoken-word density
+- loudness_db (-60 to 0): perceived loudness
+- popularity_score (0-100): simulated mainstream appeal
+- novelty_score (0.0-1.0): how different a song is from recent listening history
+- complexity (0.0-1.0): rhythmic or melodic complexity
+- warmth (0.0-1.0): perceived analog or warm sonic character
 
 ---
 
@@ -41,6 +148,7 @@ You can include a simple diagram or bullet list if helpful.
    python -m venv .venv
    source .venv/bin/activate      # Mac or Linux
    .venv\Scripts\activate         # Windows
+  ```
 
 2. Install dependencies
 
@@ -92,7 +200,7 @@ You will go deeper on this in your model card.
 
 ## Reflection
 
-Read and complete `model_card.md`:
+Read and complete model_card.md:
 
 [**Model Card**](model_card.md)
 
@@ -100,112 +208,4 @@ Write 1 to 2 paragraphs here about what you learned:
 
 - about how recommenders turn data into predictions
 - about where bias or unfairness could show up in systems like this
-
-
----
-
-## 7. `model_card_template.md`
-
-Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}  
-
-```markdown
-# 🎧 Model Card - Music Recommender Simulation
-
-## 1. Model Name
-
-Give your recommender a name, for example:
-
-> VibeFinder 1.0
-
----
-
-## 2. Intended Use
-
-- What is this system trying to do
-- Who is it for
-
-Example:
-
-> This model suggests 3 to 5 songs from a small catalog based on a user's preferred genre, mood, and energy level. It is for classroom exploration only, not for real users.
-
----
-
-## 3. How It Works (Short Explanation)
-
-Describe your scoring logic in plain language.
-
-- What features of each song does it consider
-- What information about the user does it use
-- How does it turn those into a number
-
-Try to avoid code in this section, treat it like an explanation to a non programmer.
-
----
-
-## 4. Data
-
-Describe your dataset.
-
-- How many songs are in `data/songs.csv`
-- Did you add or remove any songs
-- What kinds of genres or moods are represented
-- Whose taste does this data mostly reflect
-
----
-
-## 5. Strengths
-
-Where does your recommender work well
-
-You can think about:
-- Situations where the top results "felt right"
-- Particular user profiles it served well
-- Simplicity or transparency benefits
-
----
-
-## 6. Limitations and Bias
-
-Where does your recommender struggle
-
-Some prompts:
-- Does it ignore some genres or moods
-- Does it treat all users as if they have the same taste shape
-- Is it biased toward high energy or one genre by default
-- How could this be unfair if used in a real product
-
----
-
-## 7. Evaluation
-
-How did you check your system
-
-Examples:
-- You tried multiple user profiles and wrote down whether the results matched your expectations
-- You compared your simulation to what a real app like Spotify or YouTube tends to recommend
-- You wrote tests for your scoring logic
-
-You do not need a numeric metric, but if you used one, explain what it measures.
-
----
-
-## 8. Future Work
-
-If you had more time, how would you improve this recommender
-
-Examples:
-
-- Add support for multiple users and "group vibe" recommendations
-- Balance diversity of songs instead of always picking the closest match
-- Use more features, like tempo ranges or lyric themes
-
----
-
-## 9. Personal Reflection
-
-A few sentences about what you learned:
-
-- What surprised you about how your system behaved
-- How did building this change how you think about real music recommenders
-- Where do you think human judgment still matters, even if the model seems "smart"
 
