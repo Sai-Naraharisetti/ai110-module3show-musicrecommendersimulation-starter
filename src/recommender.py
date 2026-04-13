@@ -45,12 +45,12 @@ class Recommender:
         for song in self.songs:
             score = 0.0
             if song.genre.lower() == user.favorite_genre.lower():
-                score += 2.0
+                score += 1.0
             if song.mood.lower() == user.favorite_mood.lower():
                 score += 1.0
 
             energy_similarity = max(0.0, 1.0 - abs(song.energy - user.target_energy))
-            score += 2.0 * energy_similarity
+            score += 4.0 * energy_similarity
 
             if user.likes_acoustic:
                 score += 1.0 * song.acousticness
@@ -108,8 +108,8 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     target_energy = user_prefs.get("target_energy", user_prefs.get("energy"))
 
     if favorite_genre and str(song.get("genre", "")).lower() == str(favorite_genre).lower():
-        score += 2.0
-        reasons.append("genre match (+2.0)")
+        score += 1.0
+        reasons.append("genre match (+1.0)")
 
     if favorite_mood and str(song.get("mood", "")).lower() == str(favorite_mood).lower():
         score += 1.0
@@ -117,7 +117,7 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 
     if target_energy is not None:
         energy_similarity = max(0.0, 1.0 - abs(float(song["energy"]) - float(target_energy)))
-        energy_points = 2.0 * energy_similarity
+        energy_points = 4.0 * energy_similarity
         score += energy_points
         reasons.append(f"energy closeness (+{energy_points:.2f})")
 

@@ -16,32 +16,89 @@ def main() -> None:
     songs = load_songs("data/songs.csv")
     print(f"Loaded songs: {len(songs)}")
 
-    # Default profile for the starter simulation
-    user_prefs = {
-        "favorite_genre": "pop",
-        "favorite_mood": "happy",
-        "target_energy": 0.80,
-        "target_tempo_bpm": 122,
-        "target_valence": 0.82,
-        "target_danceability": 0.84,
-        "target_acousticness": 0.20,
-    }
+    profiles = [
+        (
+            "High-Energy Pop",
+            {
+                "favorite_genre": "pop",
+                "favorite_mood": "happy",
+                "target_energy": 0.90,
+                "target_tempo_bpm": 128,
+                "target_valence": 0.85,
+                "target_danceability": 0.88,
+                "target_acousticness": 0.12,
+            },
+        ),
+        (
+            "Chill Lofi",
+            {
+                "favorite_genre": "lofi",
+                "favorite_mood": "calm",
+                "target_energy": 0.25,
+                "target_tempo_bpm": 78,
+                "target_valence": 0.45,
+                "target_danceability": 0.35,
+                "target_acousticness": 0.78,
+            },
+        ),
+        (
+            "Deep Intense Rock",
+            {
+                "favorite_genre": "rock",
+                "favorite_mood": "intense",
+                "target_energy": 0.88,
+                "target_tempo_bpm": 145,
+                "target_valence": 0.30,
+                "target_danceability": 0.48,
+                "target_acousticness": 0.08,
+            },
+        ),
+        # Adversarial/edge profiles probe contradictory preferences and out-of-band targets.
+        (
+            "Adversarial: High Energy + Sad",
+            {
+                "favorite_genre": "pop",
+                "favorite_mood": "sad",
+                "target_energy": 0.90,
+                "target_tempo_bpm": 95,
+                "target_valence": 0.10,
+                "target_danceability": 0.82,
+                "target_acousticness": 0.15,
+            },
+        ),
+        (
+            "Edge Case: Out-of-Range Targets",
+            {
+                "favorite_genre": "electronic",
+                "favorite_mood": "happy",
+                "target_energy": 1.20,
+                "target_tempo_bpm": 220,
+                "target_valence": -0.20,
+                "target_danceability": 1.10,
+                "target_acousticness": -0.30,
+            },
+        ),
+    ]
 
-    recommendations = recommend_songs(user_prefs, songs, k=5)
+    print("\nSystem Evaluation")
+    print("Top 5 recommendations for each profile:\n")
 
-    print("\nTop recommendations for profile:")
-    print(
-        f"genre={user_prefs['favorite_genre']}, "
-        f"mood={user_prefs['favorite_mood']}, "
-        f"target_energy={user_prefs['target_energy']:.2f}\n"
-    )
+    for profile_name, user_prefs in profiles:
+        recommendations = recommend_songs(user_prefs, songs, k=5)
 
-    for idx, rec in enumerate(recommendations, start=1):
-        song, score, explanation = rec
-        print(f"{idx}. {song['title']} by {song['artist']}")
-        print(f"   Score   : {score:.2f}")
-        print(f"   Reasons : {explanation}")
-        print()
+        print(f"=== {profile_name} ===")
+        print(
+            f"genre={user_prefs['favorite_genre']}, "
+            f"mood={user_prefs['favorite_mood']}, "
+            f"target_energy={float(user_prefs['target_energy']):.2f}"
+        )
+
+        for idx, rec in enumerate(recommendations, start=1):
+            song, score, explanation = rec
+            print(f"{idx}. {song['title']} by {song['artist']}")
+            print(f"   Score   : {score:.2f}")
+            print(f"   Reasons : {explanation}")
+            print()
 
 
 if __name__ == "__main__":

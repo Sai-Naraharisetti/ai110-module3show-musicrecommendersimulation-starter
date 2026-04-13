@@ -51,36 +51,28 @@ flowchart LR
 
 This system may over-prioritize genre and miss cross-genre songs that match the user's mood and vibe. It can also favor songs that are very close to one numeric target (like energy) even when a user would realistically enjoy more variety.
 
-### terminal_ss
+### System Evaluation Terminal Output (Screenshots)
 
-The environment used for this run does not allow GUI screen capture, so this is a direct terminal snapshot of `python -m src.main` output:
+Run command:
 
-```text
-Loaded songs: 18
-
-Top recommendations for profile:
-genre=pop, mood=happy, target_energy=0.80
-
-1. Sunrise City by Neon Echo
-  Score   : 6.90
-  Reasons : genre match (+2.0); mood match (+1.0); energy closeness (+1.96); valence closeness (+0.73); danceability closeness (+0.48); acousticness closeness (+0.49); tempo closeness (+0.24)
-
-2. Gym Hero by Max Pulse
-  Score   : 5.58
-  Reasons : genre match (+2.0); energy closeness (+1.74); valence closeness (+0.71); danceability closeness (+0.48); acousticness closeness (+0.42); tempo closeness (+0.23)
-
-3. Rooftop Lights by Indigo Parade
-  Score   : 4.82
-  Reasons : mood match (+1.0); energy closeness (+1.92); valence closeness (+0.74); danceability closeness (+0.49); acousticness closeness (+0.43); tempo closeness (+0.24)
-
-4. Salsa En La Noche by Brisa Roja
-  Score   : 3.92
-  Reasons : energy closeness (+1.98); valence closeness (+0.74); danceability closeness (+0.49); acousticness closeness (+0.49); tempo closeness (+0.21)
-
-5. Golden Pulse by Kora Avenue
-  Score   : 3.85
-  Reasons : energy closeness (+1.98); valence closeness (+0.68); danceability closeness (+0.47); acousticness closeness (+0.49); tempo closeness (+0.23)
+```bash
+python3 -m src.main
 ```
+
+#### High-Energy Pop
+![High-Energy Pop recommendations terminal output](assets/screenshots/profile-01-high-energy-pop.png)
+
+#### Chill Lofi
+![Chill Lofi recommendations terminal output](assets/screenshots/profile-02-chill-lofi.png)
+
+#### Deep Intense Rock
+![Deep Intense Rock recommendations terminal output](assets/screenshots/profile-03-deep-intense-rock.png)
+
+#### Adversarial: High Energy + Sad
+![Adversarial profile recommendations terminal output](assets/screenshots/profile-04-adversarial-high-energy-sad.png)
+
+#### Edge Case: Out-of-Range Targets
+![Edge case profile recommendations terminal output](assets/screenshots/profile-05-edge-out-of-range.png)
 
 
 ### Features Used In This Simulation
